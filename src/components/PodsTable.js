@@ -97,7 +97,7 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
         </table>
       </div>
       <div className="p-2 border-t border-gray-800 text-xs text-gray-500 text-center shrink-0">
-         {pods.length} Active Teams • {localLeverage}x Gross
+         {pods.length} Active Teams • {localLeverage.toFixed(1)}x Gross
       </div>
     </div>
   );
