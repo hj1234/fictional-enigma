@@ -21,15 +21,7 @@ const TradingDesk = memo(({ localLeverage, effectiveLeverage, leverage, dailyInt
       <div className="mb-4">
         <div className="flex justify-between text-xs mb-2"><span className="text-gray-500">TARGET LEVERAGE</span><span className="text-white font-bold">{localLeverage.toFixed(1)}x</span></div>
         <input type="range" min="1" max="10" step="0.5" value={localLeverage} onChange={onLeverageChange} className="w-full accent-amber-500 h-2 bg-gray-700 rounded cursor-pointer appearance-none"/>
-        <div className="flex justify-between text-xs mt-2 pt-2 border-t border-gray-800">
-          <span className="text-gray-500">REAL-TIME RISK</span>
-          <AnimatedNumber 
-            value={effectiveLeverage} 
-            formatter={fmtLeverage}
-            className={`font-mono font-bold ${effectiveLeverage > leverage + 0.5 ? 'text-red-500' : 'text-blue-400'}`}
-          />
-        </div>
-        <div className="flex justify-between text-[10px] text-gray-600 mt-1">
+        <div className="flex justify-between text-[10px] text-gray-600 mt-2">
           <span>Interest Cost:</span>
           <span className="text-red-400">
             -<AnimatedNumber value={dailyInterest} formatter={fmtMoney} /> / day
