@@ -26,7 +26,7 @@ const EmailInbox = memo(({ emails, ledger, selectedEmail, onSelectEmail, onClose
   }, [activeTab, ledger.length, onMarkLedgerViewed]);
 
   return (
-    <div className="md:col-span-4 flex flex-col border border-gray-800 bg-gray-900/40 rounded h-full overflow-hidden" data-tutorial="email-inbox">
+    <div className="md:col-span-4 flex flex-col border border-gray-800 bg-gray-900/40 rounded h-full overflow-y-auto md:overflow-hidden" data-tutorial="email-inbox">
       <div className="flex border-b border-gray-800 shrink-0">
         <button onClick={() => setActiveTab('INBOX')} className={`flex-1 py-3 text-xs font-bold transition-colors relative ${activeTab === 'INBOX' ? 'bg-gray-800 text-white' : 'text-gray-500 hover:text-gray-300'}`}>
           INBOX
@@ -48,7 +48,7 @@ const EmailInbox = memo(({ emails, ledger, selectedEmail, onSelectEmail, onClose
       {activeTab === 'INBOX' && (
         <>
           {/* LIST VIEW */}
-          <div className="flex-grow overflow-y-auto">
+          <div className="flex-grow md:flex-grow overflow-y-auto min-h-0">
             {(emails || []).length === 0 && <div className="p-8 text-center text-gray-600 text-xs italic">Inbox empty...</div>}
             
             {(emails || []).map((email) => {
@@ -163,7 +163,8 @@ const EmailInbox = memo(({ emails, ledger, selectedEmail, onSelectEmail, onClose
                      <button onClick={() => onReject(selectedEmail.id)} className="flex-1 bg-red-900/20 text-red-500 border border-red-800 py-2 text-xs font-bold hover:bg-red-900/40 transition-colors">REJECT</button>
                    </div>
                  </>
-               ) : selectedEmail.type === 'alert' && selectedEmail.data?.action === 'drawdown_warning' ? (
+               ) : (selectedEmail.type === 'alert' && selectedEmail.data?.action === 'drawdown_warning') || 
+                    (selectedEmail.type === 'alert' && selectedEmail.requires_response && selectedEmail._message_template?.impact?.user_action?.fire) ? (
                
                /* 2. DRAWDOWN WARNING EMAIL VIEW */
                  <>
@@ -190,8 +191,17 @@ const EmailInbox = memo(({ emails, ledger, selectedEmail, onSelectEmail, onClose
                  </>
                ) : (
                
-               /* 3. STANDARD EMAIL VIEW */
+               /* 3. STANDARD EMAIL VIEW (including award emails) */
                  <>
+                   {/* Award SVG Display */}
+                   {selectedEmail.data?.award_svg && (
+                     <div className="mb-4 flex justify-center">
+                       <div 
+                         className="w-32 h-32 md:w-48 md:h-48"
+                         dangerouslySetInnerHTML={{ __html: selectedEmail.data.award_svg }}
+                       />
+                     </div>
+                   )}
                    <div className={`text-sm font-bold mb-1 pr-6 ${selectedEmail.type === 'alert' ? 'text-red-500' : 'text-white'}`}>
                      {selectedEmail.subject}
                    </div>

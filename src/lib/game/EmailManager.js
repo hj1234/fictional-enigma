@@ -1,8 +1,7 @@
 /**
  * EmailManager class - Manages all email operations.
+ * Now just a container - all email creation is handled by MessageManager.
  */
-import { Email, createWelcomeLeverageEmail, createWarningEmail } from './Email.js';
-import { generateRecruit } from './Recruitment.js';
 
 export class EmailManager {
   constructor(startDate) {
@@ -26,77 +25,7 @@ export class EmailManager {
     return this.emails.find(e => e.id === emailId) || null;
   }
   
-  checkRecruitment() {
-    const pending_recruits = this.emails.filter(e => e.type === 'recruitment').length;
-    
-    if (Math.random() < 0.072) { // 20% more likely (0.06 * 1.2 = 0.072)
-      const recruit = generateRecruit();
-      
-      const headhunter_greetings = [
-        "Hey,",
-        "Hi there,",
-        "Morning,",
-        "Hope you're well,"
-      ];
-      
-      const headhunter_messages = [
-        `Thought you might like ${recruit.name}'s profile. I'm in town next week, let's grab coffee.`,
-        `Found someone interesting - ${recruit.name}. Worth a look. Coffee next week?`,
-        `Check out ${recruit.name}. Strong candidate. Free for coffee Tuesday?`,
-        `${recruit.name} might be a fit. Let me know if you want to chat over coffee.`
-      ];
-      
-      const greeting = headhunter_greetings[Math.floor(Math.random() * headhunter_greetings.length)];
-      const message = headhunter_messages[Math.floor(Math.random() * headhunter_messages.length)];
-      
-      const body = `${greeting}
-
-${message}
-
----
-CANDIDATE PROFILE
----
-
-Name: ${recruit.name}
-Specialism: ${recruit.specialism}
-
-PERFORMANCE METRICS:
-Alpha (Annualized): ${recruit.stats.alpha_display}
-Beta: ${recruit.stats.beta}
-Last Drawdown: ${recruit.stats.last_drawdown}
-Lifetime PnL: ${recruit.stats.lifetime_pnl}
-
-COMPENSATION DEMANDS:
-Sign-on Bonus: $${recruit.demands.signing_bonus.toLocaleString('en-US')}
-Annual Salary: $${recruit.demands.salary.toLocaleString('en-US')}
-Performance Cut: ${recruit.demands.pnl_cut}%
-
-BIO:
-${recruit.bio}
-
-Best,
-Headhunter`;
-      
-      const email = new Email(
-        "Headhunter",
-        `Candidate: ${recruit.name} (${recruit.specialism})`,
-        body,
-        "recruitment",
-        recruit
-      );
-      this.sendEmail(email);
-      return true;
-    }
-    return false;
-  }
-  
-  sendLeverageWarning(level) {
-    this.sendEmail(createWarningEmail(level));
-  }
-  
-  sendWelcomeLeverageEmail() {
-    this.sendEmail(createWelcomeLeverageEmail());
-  }
+  // Legacy methods removed - all email creation now handled by MessageManager
   
   markEmailAsRead(emailId) {
     const email = this.emails.find(e => e.id === emailId);

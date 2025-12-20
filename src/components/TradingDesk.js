@@ -28,7 +28,7 @@ const TradingDesk = memo(({ localLeverage, effectiveLeverage, leverage, dailyInt
           </span>
         </div>
       </div>
-      <button onClick={onToggle} className={`w-full py-3 text-sm font-bold border ${isRunning ? 'border-red-900 text-red-500' : 'border-green-900 text-green-500'}`}>{isRunning ? "HALT TRADING" : "START TRADING SESSION"}</button>
+      <button onClick={onToggle} className={`w-full py-1.5 md:py-3 text-xs md:text-sm font-bold border ${isRunning ? 'border-red-900 text-red-500' : 'border-green-900 text-green-500'}`}>{isRunning ? "HALT TRADING" : "START TRADING SESSION"}</button>
     </div>
   );
 });

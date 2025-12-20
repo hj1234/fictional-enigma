@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "framer-motion": "^12.23.26",
+    "leo-profanity": "^1.8.0",
     "lucide-react": "^0.556.0",
     "next": "16.0.8",
     "react": "19.2.1",

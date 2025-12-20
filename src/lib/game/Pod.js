@@ -1,8 +1,10 @@
 /**
  * Pod class - Contains all logic related to individual trading pods.
  */
+import { ASSET_CLASSES } from './MarketRegime.js';
+
 export class Pod {
-  constructor(id, name, specialism, alpha, beta, salary, pnl_cut) {
+  constructor(id, name, specialism, alpha, beta, salary, pnl_cut, asset_class = null) {
     this.id = id;
     this.name = name;
     this.specialism = specialism;
@@ -10,6 +12,7 @@ export class Pod {
     this.beta = beta;
     this.salary = salary;
     this.pnl_cut = pnl_cut;
+    this.asset_class = asset_class || this.inferAssetClassFromSpecialism(specialism);
     
     // Economic State
     this.cumulative_pnl = 0.0;
@@ -35,7 +38,21 @@ export class Pod {
     this.mean_reversion_rate = 0.1;
   }
   
-  tick(allocated_capital, market_return) {
+  inferAssetClassFromSpecialism(specialism) {
+    // Map specialisms to asset classes
+    const mapping = {
+      'Crypto': ASSET_CLASSES.CRYPTO,
+      'Equity TMT': ASSET_CLASSES.EQUITIES,
+      'Deep Value': ASSET_CLASSES.EQUITIES,
+      'Fixed Income RV': ASSET_CLASSES.FIXED_INCOME,
+      'Global Macro': ASSET_CLASSES.FX,
+      'Stat Arb': ASSET_CLASSES.GENERALIST,
+      'Generalist': ASSET_CLASSES.GENERALIST
+    };
+    return mapping[specialism] || ASSET_CLASSES.GENERALIST;
+  }
+  
+  tick(allocated_capital, market_return, regime_modifier = 1.0) {
     if (!this.is_active) return 0.0;
     
     // Calculate Base Return
@@ -63,6 +80,9 @@ export class Pod {
     
     const base_return = (effective_beta * market_return) + this.alpha + noise;
     
+    // Apply regime modifier to base return
+    const regime_adjusted_return = base_return * regime_modifier;
+    
     // Calculate Momentum Component (smoother, less volatile)
     if (this.recent_returns.length >= 3) {
       const recent = this.recent_returns.slice(-5);
@@ -76,7 +96,7 @@ export class Pod {
     
     // Reduced momentum contribution (70% of original)
     const momentum_contribution = this.momentum_factor * (this.momentum_strength * 0.7);
-    const daily_return_pct = base_return + momentum_contribution;
+    const daily_return_pct = regime_adjusted_return + momentum_contribution;
     
     // Store return for momentum
     this.recent_returns.push(base_return);
@@ -121,6 +141,7 @@ export class Pod {
       id: this.id,
       name: this.name,
       specialism: this.specialism,
+      asset_class: this.asset_class,
       alpha: this.alpha,
       beta: this.beta,
       pnl: this.cumulative_pnl,

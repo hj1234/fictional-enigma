@@ -1,48 +1,7 @@
 /**
- * Event System - Handles calendar events (holidays) and random events (flavor text)
+ * Event System - Utility functions for date checking
+ * All event generation is now handled by MessageManager
  */
-
-export class GameEvent {
-  constructor(id, text, type = "info", effect = {}) {
-    this.id = id;
-    this.text = text;
-    this.type = type;
-    this.effect = effect;
-  }
-}
-
-export class EventRegistry {
-  constructor() {
-    this.calendar_events = [];
-    this.random_events = [];
-  }
-  
-  registerCalendar(checkFunc, getEventFunc) {
-    this.calendar_events.push([checkFunc, getEventFunc]);
-  }
-  
-  registerRandom(probability, getEventFunc) {
-    this.random_events.push([probability, getEventFunc]);
-  }
-  
-  checkForEvents(currentDate) {
-    // Check Calendar (Highest Priority)
-    for (const [check, getEvent] of this.calendar_events) {
-      if (check(currentDate)) {
-        return getEvent(currentDate);
-      }
-    }
-    
-    // Check Random
-    for (const [prob, getEvent] of this.random_events) {
-      if (Math.random() < prob) {
-        return getEvent();
-      }
-    }
-    
-    return null;
-  }
-}
 
 export function isWeekend(date) {
   return date.getDay() >= 5; // Saturday = 6, Sunday = 0
@@ -68,45 +27,5 @@ export function getHolidayName(date) {
 
 export function checkHoliday(date) {
   return getHolidayName(date) !== null;
-}
-
-export function createHolidayEvent(date) {
-  const name = getHolidayName(date);
-  
-  const flavor = {
-    "New Year's Day": "Traders are nursing hangovers.",
-    "MLK Day": "Bond traders are skiing.",
-    "Thanksgiving": "Turkey index is up.",
-    "Christmas Day": "Santa Rally paused."
-  };
-  
-  const text = flavor[name] || `Markets closed for ${name}.`;
-  
-  return new GameEvent(
-    `holiday_${name}`,
-    `MARKET CLOSED: ${text}`,
-    "info",
-    { market_halt: true }
-  );
-}
-
-const FLAVOR_TEXT = [
-  "Analyst spotted crying in the bathroom.",
-  "Compliance officer is asking about your WhatsApps.",
-  "Your star trader wants a bigger bonus.",
-  "ZeroHedge tweeted about your positions.",
-  "The coffee machine is broken. Morale -10.",
-  "A junior analyst sent an Excel sheet with hardcoded values.",
-  "The printer is out of toner. The deal is stalled."
-];
-
-export function createFlavorEvent() {
-  const text = FLAVOR_TEXT[Math.floor(Math.random() * FLAVOR_TEXT.length)];
-  return new GameEvent(
-    "flavor_text",
-    text,
-    "default",
-    {}
-  );
 }
 
