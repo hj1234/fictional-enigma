@@ -104,6 +104,7 @@ export class Strategist {
       [ASSET_CLASSES.EQUITIES]: "Equities",
       [ASSET_CLASSES.FIXED_INCOME]: "Fixed Income",
       [ASSET_CLASSES.COMMODITIES]: "Commodities",
+      [ASSET_CLASSES.VOLATILIY]: "Volatility",
       [ASSET_CLASSES.FX]: "FX/Currency",
       [ASSET_CLASSES.GENERALIST]: "Generalist"
     };
