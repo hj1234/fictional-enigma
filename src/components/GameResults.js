@@ -17,6 +17,7 @@ export default function GameResults({ shareableId }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [selectedTrophy, setSelectedTrophy] = useState(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -133,21 +134,31 @@ export default function GameResults({ shareableId }) {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 overflow-y-auto">
+            <div className="grid grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-1.5 overflow-y-auto">
               {earnedAwards.map((awardId) => {
                 const award = Object.values(AWARDS).find(a => a.id === awardId);
                 if (!award) return null;
                 return (
                   <div 
                     key={awardId}
-                    className="bg-black border border-amber-800 rounded p-1.5 md:p-2 text-center hover:border-amber-500 transition-colors"
+                    className="bg-black border border-amber-800 rounded px-1 pt-1 pb-2 text-center hover:border-amber-500 transition-colors flex flex-col cursor-pointer"
+                    onClick={() => setSelectedTrophy(award)}
                   >
-                    <div 
-                      className="w-full aspect-square mb-1 flex items-center justify-center"
-                      dangerouslySetInnerHTML={{ __html: award.svg }}
-                    />
-                    <h4 className="text-[10px] md:text-xs font-bold text-amber-500 mb-0.5 leading-tight">{award.name}</h4>
-                    <p className="text-[8px] md:text-[10px] text-gray-500 leading-tight">{award.description}</p>
+                    <div className="w-full flex items-center justify-center flex-1 min-h-0 mb-1">
+                      <img 
+                        src={award.image} 
+                        alt={award.name}
+                        className="w-full h-full object-contain max-h-20 md:max-h-24"
+                        onError={(e) => {
+                          // Fallback to SVG if PNG doesn't exist
+                          e.target.src = award.image.replace('.png', '.svg');
+                        }}
+                      />
+                    </div>
+                    <div className="mt-0.5 shrink-0">
+                      <h4 className="text-[9px] md:text-[10px] font-bold text-amber-500 mb-0 leading-tight line-clamp-1">{award.name}</h4>
+                      <p className="text-[7px] md:text-[8px] text-gray-500 leading-tight line-clamp-1">{award.description}</p>
+                    </div>
                   </div>
                 );
               })}
@@ -184,6 +195,39 @@ export default function GameResults({ shareableId }) {
           </button>
         </div>
       </div>
+
+      {/* Trophy Modal */}
+      {selectedTrophy && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+          onClick={() => setSelectedTrophy(null)}
+        >
+          <div 
+            className="bg-gray-900 border-2 border-amber-500 rounded-lg p-6 md:p-8 max-w-md w-full text-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex justify-center">
+              <img 
+                src={selectedTrophy.image} 
+                alt={selectedTrophy.name}
+                className="w-48 h-48 md:w-64 md:h-64 object-contain"
+                onError={(e) => {
+                  // Fallback to SVG if PNG doesn't exist
+                  e.target.src = selectedTrophy.image.replace('.png', '.svg');
+                }}
+              />
+            </div>
+            <h3 className="text-xl md:text-2xl font-bold text-amber-500 mb-2">{selectedTrophy.name}</h3>
+            <p className="text-sm md:text-base text-gray-400 mb-4">{selectedTrophy.description}</p>
+            <button
+              onClick={() => setSelectedTrophy(null)}
+              className="px-6 py-2 bg-amber-900/20 border border-amber-500 hover:bg-amber-500 hover:text-black transition-all font-bold text-sm"
+            >
+              CLOSE
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

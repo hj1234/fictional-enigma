@@ -1,0 +1,26 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="ltcmGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#dc2626;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#991b1b;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Broken trophy base -->
+  <rect x="70" y="150" width="60" height="20" rx="5" fill="#7f1d1d"/>
+  <rect x="75" y="145" width="50" height="10" rx="3" fill="#991b1b"/>
+  <!-- Cracked trophy cup -->
+  <path d="M 60 80 L 60 140 L 140 140 L 140 80 Q 140 50 100 50 Q 60 50 60 80 Z" fill="url(#ltcmGrad)"/>
+  <!-- Crack lines -->
+  <path d="M 100 50 L 100 140" stroke="#000" stroke-width="2" opacity="0.6"/>
+  <path d="M 80 70 L 120 110" stroke="#000" stroke-width="1.5" opacity="0.5"/>
+  <path d="M 120 70 L 80 110" stroke="#000" stroke-width="1.5" opacity="0.5"/>
+  <!-- Broken pieces falling -->
+  <path d="M 140 80 Q 150 60 160 80 L 150 90 Q 145 85 140 80 Z" fill="#dc2626" opacity="0.7"/>
+  <path d="M 60 80 Q 50 60 40 80 L 50 90 Q 55 85 60 80 Z" fill="#dc2626" opacity="0.7"/>
+  <!-- Warning symbol -->
+  <path d="M 100 60 L 110 85 L 90 85 Z" fill="#fbbf24"/>
+  <text x="100" y="78" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#000" text-anchor="middle">!</text>
+  <!-- Leverage indicator -->
+  <text x="100" y="125" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#fbbf24" text-anchor="middle">15x</text>
+</svg>
+

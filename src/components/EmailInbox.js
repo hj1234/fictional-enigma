@@ -193,12 +193,17 @@ const EmailInbox = memo(({ emails, ledger, selectedEmail, onSelectEmail, onClose
                
                /* 3. STANDARD EMAIL VIEW (including award emails) */
                  <>
-                   {/* Award SVG Display */}
-                   {selectedEmail.data?.award_svg && (
+                   {/* Award Image Display */}
+                   {selectedEmail.data?.award_image && (
                      <div className="mb-4 flex justify-center">
-                       <div 
-                         className="w-32 h-32 md:w-48 md:h-48"
-                         dangerouslySetInnerHTML={{ __html: selectedEmail.data.award_svg }}
+                       <img 
+                         src={selectedEmail.data.award_image} 
+                         alt={selectedEmail.data.award_name || 'Award'}
+                         className="w-32 h-32 md:w-48 md:h-48 object-contain"
+                         onError={(e) => {
+                           // Fallback to SVG if PNG doesn't exist
+                           e.target.src = selectedEmail.data.award_image.replace('.png', '.svg');
+                         }}
                        />
                      </div>
                    )}

@@ -61,10 +61,17 @@ export default function TrophyCabinet({ isOpen, onClose }) {
                 key={award.id}
                 className="bg-black border border-amber-800 rounded p-3 md:p-4 text-center hover:border-amber-500 transition-colors"
               >
-                <div 
-                  className="w-full aspect-square mb-2 md:mb-3 flex items-center justify-center"
-                  dangerouslySetInnerHTML={{ __html: award.svg }}
-                />
+                <div className="w-full aspect-square mb-2 md:mb-3 flex items-center justify-center">
+                  <img 
+                    src={award.image} 
+                    alt={award.name}
+                    className="w-full h-full object-contain"
+                    onError={(e) => {
+                      // Fallback to SVG if PNG doesn't exist
+                      e.target.src = award.image.replace('.png', '.svg');
+                    }}
+                  />
+                </div>
                 <h3 className="text-xs md:text-sm font-bold text-amber-500 mb-1">{award.name}</h3>
                 <p className="text-[10px] md:text-xs text-gray-500">{award.description}</p>
               </div>

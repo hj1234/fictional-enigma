@@ -1,0 +1,20 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="trophyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Trophy base -->
+  <rect x="70" y="150" width="60" height="20" rx="5" fill="#92400e"/>
+  <rect x="75" y="145" width="50" height="10" rx="3" fill="#78350f"/>
+  <!-- Trophy cup -->
+  <path d="M 60 80 L 60 140 L 140 140 L 140 80 Q 140 50 100 50 Q 60 50 60 80 Z" fill="url(#trophyGrad)"/>
+  <ellipse cx="100" cy="80" rx="35" ry="8" fill="#fbbf24"/>
+  <!-- Trophy handles -->
+  <path d="M 60 90 Q 40 90 40 110 Q 40 130 60 130" stroke="#fbbf24" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M 140 90 Q 160 90 160 110 Q 160 130 140 130" stroke="#fbbf24" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <!-- Star on trophy -->
+  <path d="M 100 60 L 105 75 L 120 75 L 108 85 L 113 100 L 100 90 L 87 100 L 92 85 L 80 75 L 95 75 Z" fill="#fff"/>
+</svg>
+

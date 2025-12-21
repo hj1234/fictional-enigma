@@ -10,7 +10,8 @@ import { setRecruitmentData, generateRecruit } from './Recruitment.js';
 import { MessageManager } from './MessageManager.js';
 import { MarketRegime } from './MarketRegime.js';
 import { Strategist } from './Strategist.js';
-import { Awards } from './Awards.js';
+import { TimRaver } from './TimRaver.js';
+import { Awards, AWARDS } from './Awards.js';
 
 const START_DATE = new Date(2024, 0, 1); // Jan 1, 2024
 
@@ -45,6 +46,10 @@ export class GameState {
     // Initialize Strategist
     this.strategist = new Strategist();
     this.last_regime_check = null; // Track when we last sent regime analysis
+    
+    // Initialize Tim Raver (inverse Cramer - always wrong)
+    this.tim_raver = new TimRaver();
+    this.last_tim_raver_check = null; // Track when we last sent Tim Raver analysis
     
     // Initialize Awards System
     this.awards = new Awards();
@@ -281,6 +286,21 @@ export class GameState {
       );
       this.email_manager.sendEmail(strategistEmail);
       
+      // Also send Tim Raver newswire (always wrong, appears as newswire)
+      const timRaverNews = this.tim_raver.generateRecommendations(
+        this.market_regime.getRegimeInfo(),
+        this.current_date
+      );
+      this.news_wire.news_items.unshift(timRaverNews);
+      if (this.news_wire.news_items.length > 50) {
+        this.news_wire.news_items.pop();
+      }
+      this.logs.unshift({
+        date: this.current_date.toISOString().split('T')[0],
+        text: `NEWS: ${timRaverNews.headline} - ${timRaverNews.source}`,
+        type: timRaverNews.type || "alert"
+      });
+      
       // Log regime change
       this.logs.unshift({
         date: this.current_date.toISOString().split('T')[0],
@@ -289,6 +309,7 @@ export class GameState {
       });
       
       this.last_regime_check = this.market_regime.current_regime;
+      this.last_tim_raver_check = this.market_regime.current_regime;
     }
     
     // Also send periodic strategist emails (once per regime, randomly timed)
@@ -304,6 +325,27 @@ export class GameState {
         );
         this.email_manager.sendEmail(strategistEmail);
         this.last_regime_check = this.market_regime.current_regime;
+      }
+    }
+    
+    // Also send periodic Tim Raver newswire (once per regime, randomly timed, different timing than strategist)
+    if (this.last_tim_raver_check !== this.market_regime.current_regime) {
+      // Tim Raver appears 1-5 days into a regime (earlier and more frequent than strategist)
+      if (daysInRegime >= 1 && daysInRegime <= 5 && Math.random() < 0.4) {
+        const timRaverNews = this.tim_raver.generateRecommendations(
+          this.market_regime.getRegimeInfo(),
+          this.current_date
+        );
+        this.news_wire.news_items.unshift(timRaverNews);
+        if (this.news_wire.news_items.length > 50) {
+          this.news_wire.news_items.pop();
+        }
+        this.logs.unshift({
+          date: this.current_date.toISOString().split('T')[0],
+          text: `NEWS: ${timRaverNews.headline} - ${timRaverNews.source}`,
+          type: timRaverNews.type || "alert"
+        });
+        this.last_tim_raver_check = this.market_regime.current_regime;
       }
     }
     
@@ -437,6 +479,16 @@ export class GameState {
         // Send margin call email
         for (const email of marginCallResults.email) {
           this.email_manager.sendEmail(email);
+        }
+        
+        // Award LTCM Trophy for margin call
+        if (!this.awards.hasEarned('ltcm_trophy')) {
+          this.awards.earnedAwards.push('ltcm_trophy');
+          this.awards.saveEarnedAwards();
+          
+          // Send award email
+          const awardEmail = this.awards.generateAwardEmail(AWARDS.LTCM_TROPHY, this.current_date);
+          this.email_manager.sendEmail(awardEmail);
         }
         
         // Check for game over impact

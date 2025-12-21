@@ -367,15 +367,20 @@ export default function GameDashboard({ firmName }) {
               gameStateRef.current.current_date.toISOString().split('T')[0] : 
               null;
             
-            // Prepare results data for normal game end
+            // Get earned awards (including LTCM Trophy if margin called)
+            const earnedAwards = gameStateRef.current.awards.getEarnedAwards().map(a => a.id);
+            
+            // Prepare results data for game end (works for both retire and margin call)
             const resultsData = {
               firmCash: newState.firm_cash,
               investorEquity: newState.investor_equity,
               gameStartDate: gameStartDate,
-              gameEndDate: gameEndDate
+              gameEndDate: gameEndDate,
+              earnedAwards: earnedAwards
             };
             
-            fetch(`${API_BASE}/api/games/in-progress/${gameIdRef.current}/end?completed=true&total_pnl=${totalPnL}`, {
+            // End game and get shareable ID (same as retire flow)
+            fetch(`${API_BASE}/api/games/in-progress/${gameIdRef.current}/end?completed=${newState.game_over_reason !== 'margin_call'}&total_pnl=${totalPnL}`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -383,8 +388,28 @@ export default function GameDashboard({ firmName }) {
               body: JSON.stringify({
                 results_data: JSON.stringify(resultsData)
               })
-            }).catch(err => console.warn('Failed to end game:', err));
-            gameIdRef.current = null; // Clear ref to prevent duplicate calls
+            })
+            .then(res => {
+              if (!res.ok) {
+                throw new Error(`Failed to end game: ${res.status}`);
+              }
+              return res.json();
+            })
+            .then(result => {
+              const shareableId = result.shareable_id;
+              if (shareableId) {
+                // Clear game state
+                localStorage.removeItem('pod_shop_game_state');
+                gameIdRef.current = null;
+                // Redirect to results page (same as retire)
+                router.push(`/results/${shareableId}`);
+              }
+            })
+            .catch(err => {
+              console.warn('Failed to end game:', err);
+              // Still clear the ref to prevent duplicate calls
+              gameIdRef.current = null;
+            });
           }
         }
       }, 1000); // 1 second per day
