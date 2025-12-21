@@ -412,7 +412,7 @@ export default function GameDashboard({ firmName }) {
             });
           }
         }
-      }, 1000); // 1 second per day
+      }, 2000); // 2 seconds per day
     } else {
       if (gameIntervalRef.current) {
         clearInterval(gameIntervalRef.current);

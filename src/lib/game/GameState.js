@@ -56,6 +56,11 @@ export class GameState {
     this.previous_nav = null;
     this.previous_firm_cash = null;
     
+    // Time limit tracking
+    this.start_date = new Date(START_DATE);
+    this.trading_days_elapsed = 0;
+    this.max_trading_days = 756; // 3 years * 252 trading days/year
+    
     // NewsWire is now just a container for news items (no logic)
     this.news_wire = { news_items: [] };
     
@@ -267,6 +272,35 @@ export class GameState {
       newDate.setDate(newDate.getDate() + 1);
     }
     this.current_date = newDate;
+    
+    // Increment trading days counter (only count weekdays)
+    this.trading_days_elapsed++;
+    
+    // Check for 3-year time limit
+    if (this.trading_days_elapsed >= this.max_trading_days) {
+      // Award "Survived Three Years" trophy
+      if (!this.awards.hasEarned('survived_three_years')) {
+        this.awards.earnedAwards.push('survived_three_years');
+        this.awards.saveEarnedAwards();
+        
+        // Send award email
+        const awardEmail = this.awards.generateAwardEmail(AWARDS.SURVIVED_THREE_YEARS, this.current_date);
+        this.email_manager.sendEmail(awardEmail);
+      }
+      
+      // End the game
+      this.game_over = true;
+      this.game_over_reason = "time_limit";
+      this.is_running = false;
+      
+      this.logs.unshift({
+        date: this.current_date.toISOString().split('T')[0],
+        text: "TIME LIMIT REACHED: 3 years have passed. Game complete.",
+        type: "info"
+      });
+      
+      return this.getState();
+    }
     
     // Update date in components
     this.fund.current_date = this.current_date;
@@ -549,31 +583,53 @@ export class GameState {
       if (pod.id === "0") continue;
       if (pod.is_fired || !pod.is_active) continue;
       
+      // Reset flag when drawdown recovers above -5%
       if (pod.current_drawdown > -0.05 && pod.drawdown_warning_sent) {
         pod.drawdown_warning_sent = false;
       }
       
-      if (pod.current_drawdown <= -0.05 && !pod.drawdown_warning_sent) {
-        // Trigger drawdown event
-        const drawdownResults = this.message_manager.triggerGameEvent('pod_drawdown', {
-          pod_id: pod.id,
-          pod_name: pod.name,
-          drawdown: pod.current_drawdown,
-          drawdown_display: `${Math.abs(pod.current_drawdown * 100).toFixed(1)}%`,
-          salary: pod.salary
-        });
+      // Check if pod is in drawdown and should receive email
+      if (pod.current_drawdown <= -0.05) {
+        // Check if we've sent a drawdown email for this pod this month
+        const shouldSendEmail = (() => {
+          if (!pod.last_drawdown_email_date) {
+            // Never sent before, send it
+            return true;
+          }
+          
+          // Check if we're in a different month than when we last sent
+          const lastEmailDate = new Date(pod.last_drawdown_email_date);
+          const isDifferentMonth = 
+            this.current_date.getMonth() !== lastEmailDate.getMonth() ||
+            this.current_date.getFullYear() !== lastEmailDate.getFullYear();
+          
+          // Only send if we're in a different month
+          return isDifferentMonth;
+        })();
         
-        for (const email of drawdownResults.email) {
-          this.email_manager.sendEmail(email);
+        if (shouldSendEmail && !pod.drawdown_warning_sent) {
+          // Trigger drawdown event
+          const drawdownResults = this.message_manager.triggerGameEvent('pod_drawdown', {
+            pod_id: pod.id,
+            pod_name: pod.name,
+            drawdown: pod.current_drawdown,
+            drawdown_display: `${Math.abs(pod.current_drawdown * 100).toFixed(1)}%`,
+            salary: pod.salary
+          });
+          
+          for (const email of drawdownResults.email) {
+            this.email_manager.sendEmail(email);
+          }
+          
+          pod.drawdown_warning_sent = true;
+          pod.last_drawdown_email_date = new Date(this.current_date); // Store date as Date object
+          
+          this.logs.unshift({
+            date: this.current_date.toISOString().split('T')[0],
+            text: `RISK ALERT: ${pod.name} drawdown at ${(pod.current_drawdown * 100).toFixed(1)}%`,
+            type: "alert"
+          });
         }
-        
-        pod.drawdown_warning_sent = true;
-        
-        this.logs.unshift({
-          date: this.current_date.toISOString().split('T')[0],
-          text: `RISK ALERT: ${pod.name} drawdown at ${(pod.current_drawdown * 100).toFixed(1)}%`,
-          type: "alert"
-        });
       }
     }
     
@@ -649,10 +705,12 @@ export class GameState {
       game_over: this.game_over,
       game_over_reason: this.game_over_reason,
       firm_name: this.firm_name,
-      pods: active_pods.map(p => p.getSerialized(total_weight)),
-      market_history: this.fund.getMarketPerformanceHistory(),
-      earned_awards: this.awards.getEarnedAwards()
-    };
+        pods: active_pods.map(p => p.getSerialized(total_weight)),
+        market_history: this.fund.getMarketPerformanceHistory(),
+        earned_awards: this.awards.getEarnedAwards(),
+        trading_days_elapsed: this.trading_days_elapsed,
+        max_trading_days: this.max_trading_days
+      };
   }
   
   _calculatePrestigeMonths(pod) {

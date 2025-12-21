@@ -28,7 +28,8 @@ export class Pod {
     this.perf_index = 100.0;
     this.peak_index = 100.0;
     this.current_drawdown = 0.0;
-    this.drawdown_warning_sent = false;
+    this.drawdown_warning_sent = false; // Legacy flag for immediate check
+    this.last_drawdown_email_date = null; // Track when last drawdown email was sent
     
     // Momentum/Streak Tracking
     this.recent_returns = [];

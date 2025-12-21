@@ -111,6 +111,16 @@ export const AWARDS = {
       direction: 'above'
     },
     image: '/trophies/podcast.png'
+  },
+  SURVIVED_THREE_YEARS: {
+    id: 'survived_three_years',
+    name: 'Survived Three Years',
+    description: 'Completed 3-year fund management tenure',
+    trigger: {
+      type: 'time_limit',
+      // This will be awarded manually when time limit is reached
+    },
+    image: '/trophies/survived_three_years.svg'
   }
 };
 
