@@ -33,6 +33,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning={true} 
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
