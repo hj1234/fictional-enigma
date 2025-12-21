@@ -80,7 +80,7 @@ export default function GameHome({ onStartGame }) {
           {/* OBJECTIVE */}
           <div className="border-y border-amber-900/50 py-4 md:py-8 my-2 md:my-4 space-y-2 md:space-y-4">
             <p className="text-sm md:text-lg text-gray-400">
-              OBJECTIVE: <span className="text-white">You have three years to build the world's greatest hedge fund.</span>
+              OBJECTIVE: <span className="text-white">You have five years to build the world's greatest hedge fund.</span>
             </p>
             <p className="text-xs md:text-sm text-gray-600 max-w-md mx-auto px-2">
               Hire psychopaths. Leverage other people's money. Ignore the SEC. 

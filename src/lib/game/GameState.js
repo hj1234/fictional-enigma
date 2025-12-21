@@ -59,7 +59,7 @@ export class GameState {
     // Time limit tracking
     this.start_date = new Date(START_DATE);
     this.trading_days_elapsed = 0;
-    this.max_trading_days = 756; // 3 years * 252 trading days/year
+    this.max_trading_days = 1260; // 5 years * 252 trading days/year
     
     // NewsWire is now just a container for news items (no logic)
     this.news_wire = { news_items: [] };
@@ -276,7 +276,7 @@ export class GameState {
     // Increment trading days counter (only count weekdays)
     this.trading_days_elapsed++;
     
-    // Check for 3-year time limit
+    // Check for 5-year time limit
     if (this.trading_days_elapsed >= this.max_trading_days) {
       // Award "Survived Three Years" trophy
       if (!this.awards.hasEarned('survived_three_years')) {
@@ -295,7 +295,7 @@ export class GameState {
       
       this.logs.unshift({
         date: this.current_date.toISOString().split('T')[0],
-        text: "TIME LIMIT REACHED: 3 years have passed. Game complete.",
+        text: "TIME LIMIT REACHED: 5 years have passed. Game complete.",
         type: "info"
       });
       
