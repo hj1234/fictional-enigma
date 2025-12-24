@@ -38,7 +38,7 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange, poachedPods =
   return (
     <div className="flex-grow border border-gray-800 bg-gray-900/40 rounded flex flex-col overflow-hidden" data-tutorial="pods-table">
       <h2 className="p-2 md:p-3 text-[10px] md:text-xs text-gray-400 border-b border-gray-800 shrink-0">ACTIVE PODS</h2>
-      <div className="flex-grow overflow-y-auto">
+      <div className="flex-grow overflow-y-auto max-h-[60vh]">
         <table className="w-full text-[10px] md:text-xs">
           <thead className="sticky top-0 bg-gray-900">
             <tr>
