@@ -64,6 +64,7 @@ export default function GameDashboard({ firmName }) {
   const gameIntervalRef = useRef(null);
   const gameIdRef = useRef(null); // Track game ID from backend
   const geolocationRef = useRef(null); // Store geolocation
+  const tutorialShownRef = useRef(false); // Track if tutorial has been shown for this game session
   
   // Track previous date to detect changes and force updates
   const previousDateRef = useRef(null);
@@ -96,6 +97,11 @@ export default function GameDashboard({ firmName }) {
       
       // Check if this is a new game (different firm name) or resuming existing game
       const isNewGame = !savedState || (savedState && JSON.parse(savedState).firm_name !== firmName);
+      
+      // Reset tutorial shown flag for new games
+      if (isNewGame) {
+        tutorialShownRef.current = false;
+      }
       
       if (isNewGame) {
         // Clear earned awards when starting a new game
@@ -436,11 +442,14 @@ export default function GameDashboard({ firmName }) {
     // The viewed counts will be updated when user actually views items via callbacks
   }, [gameState]);
   
-  // Show tutorial at the start of every game
+  // Show tutorial only once when game first loads
   useEffect(() => {
-    if (gameState) {
+    if (gameState && !tutorialShownRef.current) {
       // Small delay to let UI render
-      setTimeout(() => setShowTutorial(true), 500);
+      setTimeout(() => {
+        setShowTutorial(true);
+        tutorialShownRef.current = true; // Mark as shown
+      }, 500);
     }
   }, [gameState]);
   
