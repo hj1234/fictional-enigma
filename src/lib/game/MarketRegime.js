@@ -16,6 +16,7 @@ export const ASSET_CLASSES = {
   COMMODITIES: 'commodities',
   FX: 'fx',
   VOLATILITY: "volatility",
+  CREDIT: 'credit',
   GENERALIST: 'generalist' // For pods without specific asset class
 };
 
@@ -26,6 +27,7 @@ const REGIME_MODIFIERS = {
     [ASSET_CLASSES.CRYPTO]: 1.3,        // very_favorable
     [ASSET_CLASSES.EQUITIES]: 1.2,      // favorable
     [ASSET_CLASSES.COMMODITIES]: 1.15,  // favorable
+    [ASSET_CLASSES.CREDIT]: 1.1,        // favorable - growth supports credit
     [ASSET_CLASSES.FX]: 1.0,
     [ASSET_CLASSES.VOLATILITY]: 0.9,             // neutral
     [ASSET_CLASSES.FIXED_INCOME]: 0.9,  // negative
@@ -34,6 +36,7 @@ const REGIME_MODIFIERS = {
   [REGIMES.GOLDILOCKS]: {
     [ASSET_CLASSES.CRYPTO]: 1.15,       // favorable
     [ASSET_CLASSES.EQUITIES]: 1.3,      // very_favorable
+    [ASSET_CLASSES.CREDIT]: 1.25,       // very_favorable - ideal conditions for credit
     [ASSET_CLASSES.FIXED_INCOME]: 1.1,  // favorable
     [ASSET_CLASSES.FX]: 1.05,           // favorable
     [ASSET_CLASSES.VOLATILITY]: 0.95,
@@ -46,6 +49,7 @@ const REGIME_MODIFIERS = {
     [ASSET_CLASSES.EQUITIES]: 0.85,     // negative
     [ASSET_CLASSES.CRYPTO]: 0.7,        // very_negative
     [ASSET_CLASSES.COMMODITIES]: 0.8,   // negative
+    [ASSET_CLASSES.CREDIT]: 0.8,        // negative - deflation makes debt harder to service
     [ASSET_CLASSES.VOLATILITY]: 1.5,
     [ASSET_CLASSES.GENERALIST]: 0.95    // negative
   },
@@ -55,6 +59,7 @@ const REGIME_MODIFIERS = {
     [ASSET_CLASSES.FX]: 0.9,            // negative
     [ASSET_CLASSES.EQUITIES]: 0.75,     // very_negative
     [ASSET_CLASSES.FIXED_INCOME]: 0.85, // negative
+    [ASSET_CLASSES.CREDIT]: 0.75,       // very_negative - defaults rise in stagflation
     [ASSET_CLASSES.VOLATILITY]: 1.25,
     [ASSET_CLASSES.GENERALIST]: 0.9     // negative
   }

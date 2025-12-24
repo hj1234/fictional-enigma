@@ -9,6 +9,7 @@ export default function GameHome({ onStartGame }) {
   const [firmName, setFirmName] = useState('');
   const [error, setError] = useState('');
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   // SQL injection detection
   const detectSQLInjection = (input) => {
@@ -52,8 +53,8 @@ export default function GameHome({ onStartGame }) {
     }
     
     // Check length first
-    if (trimmedName.length > 20) {
-      setError("NAME TOO LONG (MAX 20 CHARS).");
+    if (trimmedName.length > 35) {
+      setError("NAME TOO LONG (MAX 35 CHARS).");
       return;
     }
     
@@ -106,7 +107,9 @@ export default function GameHome({ onStartGame }) {
             </button>
           </div>
 
-          <p className="text-[10px] md:text-xs text-gray-700 mt-4 md:mt-10">v0.1.0 // COPYRIGHT (C) 2024</p>
+          <p className="text-[10px] md:text-xs text-gray-700 mt-4 md:mt-10">
+            v1.0.0 // <a href="mailto:podfather@podshop.io" className="hover:text-amber-500 transition-colors">Contact</a> // <button onClick={() => setShowDisclaimer(true)} className="hover:text-amber-500 transition-colors">Disclaimer</button> // COPYRIGHT (C) 2025
+          </p>
         </div>
         
         {/* Leaderboard Modal */}
@@ -114,6 +117,45 @@ export default function GameHome({ onStartGame }) {
           isOpen={showLeaderboard}
           onClose={() => setShowLeaderboard(false)}
         />
+        
+        {/* Disclaimer Modal */}
+        {showDisclaimer && (
+          <div 
+            className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
+            onClick={() => setShowDisclaimer(false)}
+          >
+            <div 
+              className="bg-gray-900 border border-amber-800 rounded-lg p-6 md:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-xl md:text-2xl font-bold text-amber-500">DISCLAIMER</h2>
+                <button
+                  onClick={() => setShowDisclaimer(false)}
+                  className="text-gray-500 hover:text-white text-2xl font-bold w-8 h-8 flex items-center justify-center"
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="text-xs md:text-sm text-gray-300 leading-relaxed space-y-4">
+                <p>
+                  This game is a work of fiction. Any resemblance to actual persons, living or dead, or actual events, is purely coincidental.
+                </p>
+                <p>
+                  All characters, organizations, institutions, and events portrayed in this game are fictional. Any similarity to real-world hedge funds, financial institutions, trading firms, regulatory bodies, or individuals is entirely unintentional and coincidental.
+                </p>
+                <p>
+                  This game is for entertainment purposes only and does not constitute financial advice, investment guidance, or any form of professional recommendation. The game mechanics, market behaviors, and financial outcomes are simulated and should not be used as a basis for real-world financial decisions.
+                </p>
+                <p>
+                  The creators and publishers of this game assume no responsibility for any actions taken based on the content or mechanics of this game.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -132,7 +174,7 @@ export default function GameHome({ onStartGame }) {
           <div className="grid grid-cols-2 gap-2 md:gap-4">
             <div className="bg-black border border-gray-800 p-2 md:p-4 rounded text-center">
               <div className="text-[10px] md:text-xs text-gray-500 uppercase mb-1">Seed Capital</div>
-              <div className="text-base md:text-xl font-bold text-blue-400">$10M</div>
+              <div className="text-base md:text-xl font-bold text-blue-400">$30M</div>
             </div>
             <div className="bg-black border border-gray-800 p-2 md:p-4 rounded text-center">
               <div className="text-[10px] md:text-xs text-gray-500 uppercase mb-1">Investor AUM</div>

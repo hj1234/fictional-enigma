@@ -1,5 +1,5 @@
 "use client";
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AnimatedNumber from './AnimatedNumber';
 
 const fmtMoney = (n) => {
@@ -14,8 +14,27 @@ const fmtPct = (n) => {
   return (n * 100).toFixed(1) + "%";
 };
 
-const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
+const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange, poachedPods = [], onFirePod }) => {
   const [selectedPod, setSelectedPod] = useState(null);
+  const [animatingPods, setAnimatingPods] = useState(new Set());
+  
+  // Handle poached pods animation
+  useEffect(() => {
+    if (poachedPods && poachedPods.length > 0) {
+      poachedPods.forEach(podId => {
+        setAnimatingPods(prev => new Set(prev).add(podId));
+        // Remove animation after 2 seconds
+        setTimeout(() => {
+          setAnimatingPods(prev => {
+            const next = new Set(prev);
+            next.delete(podId);
+            return next;
+          });
+        }, 2000);
+      });
+    }
+  }, [poachedPods]);
+  
   return (
     <div className="flex-grow border border-gray-800 bg-gray-900/40 rounded flex flex-col overflow-hidden" data-tutorial="pods-table">
       <h2 className="p-2 md:p-3 text-[10px] md:text-xs text-gray-400 border-b border-gray-800 shrink-0">ACTIVE PODS</h2>
@@ -30,20 +49,28 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
               <th className="hidden md:table-cell p-2 border-b border-gray-800 text-right">DD</th>
               <th className="p-1 md:p-2 border-b border-gray-800 text-right">Monthly PnL</th>
               <th className="p-1 md:p-2 border-b border-gray-800 text-right">Total PnL</th>
-              <th className="md:hidden p-1 border-b border-gray-800 text-center w-8"></th>
+              <th className="p-1 border-b border-gray-800 text-center w-8"></th>
             </tr>
           </thead>
           <tbody>
-            {pods.map((pod) => (
-              <tr key={`pod-${dateKey}-${pod.id}`} className="border-b border-gray-800/50 hover:bg-gray-800/30">
+            {pods.map((pod) => {
+              const isPoached = animatingPods.has(pod.id);
+              return (
+              <tr 
+                key={`pod-${dateKey}-${pod.id}`} 
+                className={`border-b border-gray-800/50 hover:bg-gray-800/30 transition-all duration-1000 ${
+                  isPoached 
+                    ? 'bg-red-900/50 animate-pulse border-red-500/50' 
+                    : ''
+                }`}
+              >
                 <td className="p-1 md:p-2">
                   <div className="text-white font-bold text-[10px] md:text-xs">{pod.name}</div>
-                  <div className="text-gray-500 text-[8px] md:text-[9px] uppercase">
-                    {pod.specialism}
-                    {pod.asset_class && pod.asset_class !== 'generalist' && (
-                      <span className="ml-1 text-amber-600">• {pod.asset_class.toUpperCase()}</span>
-                    )}
-                  </div>
+                  {pod.asset_class && (
+                    <div className="text-cyan-400 text-[8px] md:text-[9px] uppercase">
+                      {pod.asset_class.replace(/_/g, ' ').toUpperCase()}
+                    </div>
+                  )}
                 </td>
                 
                 <td className="p-1 md:p-2 text-center">
@@ -99,7 +126,7 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
                     className={`font-bold text-[10px] md:text-xs ${pod.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}
                   />
                 </td>
-                <td className="md:hidden p-1 text-center">
+                <td className="p-1 text-center">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
@@ -115,7 +142,8 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
                   </button>
                 </td>
               </tr>
-            ))}
+            );
+            })}
           </tbody>
         </table>
       </div>
@@ -123,14 +151,14 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
          {pods.length} Active Teams • {localLeverage.toFixed(1)}x Gross
       </div>
       
-      {/* Mobile Popup Modal */}
+      {/* Pod Info Modal */}
       {selectedPod && (
         <div 
-          className="md:hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
           onClick={() => setSelectedPod(null)}
         >
           <div 
-            className="bg-gray-900 border border-amber-800 rounded-lg p-4 max-w-sm w-full relative"
+            className="bg-gray-900 border border-amber-800 rounded-lg p-4 md:p-6 max-w-md w-full relative"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Close Button */}
@@ -148,14 +176,32 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
               
               return (
                 <>
-                  <h3 className="text-white font-bold text-sm mb-1 pr-6">{pod.name}</h3>
-                  <div className="text-gray-500 text-[10px] uppercase mb-4">{pod.specialism}</div>
+                  <h3 className="text-white font-bold text-base md:text-lg mb-1 pr-6">{pod.name}</h3>
+                  {pod.asset_class && (
+                    <div className="text-cyan-400 text-xs md:text-sm uppercase mb-1">
+                      {pod.asset_class.replace(/_/g, ' ').toUpperCase()}
+                    </div>
+                  )}
+                  {pod.specialism && (
+                    <div className="text-gray-500 text-xs md:text-sm uppercase mb-2">
+                      {pod.specialism}
+                    </div>
+                  )}
                   
-                  <div className="space-y-3">
+                  {/* Bio/Description */}
+                  {pod.bio && (
+                    <div className="mb-4 pb-4 border-b border-gray-800">
+                      <div className="text-[10px] md:text-xs text-gray-500 uppercase mb-1">Description</div>
+                      <div className="text-gray-300 text-xs md:text-sm italic">{pod.bio}</div>
+                    </div>
+                  )}
+                  
+                  {/* Stats */}
+                  <div className="space-y-3 mb-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <div className="text-[9px] text-gray-500 uppercase mb-1">Alpha</div>
-                        <div className="text-cyan-400 font-mono text-sm font-bold">
+                        <div className="text-[9px] md:text-[10px] text-gray-500 uppercase mb-1">Alpha</div>
+                        <div className="text-cyan-400 font-mono text-sm md:text-base font-bold">
                           <AnimatedNumber 
                             value={pod.alpha || 0} 
                             formatter={(v) => (v * 100).toFixed(2) + "%"}
@@ -164,8 +210,8 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
                         </div>
                       </div>
                       <div>
-                        <div className="text-[9px] text-gray-500 uppercase mb-1">Beta</div>
-                        <div className="text-purple-400 font-mono text-sm font-bold">
+                        <div className="text-[9px] md:text-[10px] text-gray-500 uppercase mb-1">Beta</div>
+                        <div className="text-purple-400 font-mono text-sm md:text-base font-bold">
                           <AnimatedNumber 
                             value={pod.beta || 0} 
                             formatter={(v) => v.toFixed(2)}
@@ -174,8 +220,8 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
                         </div>
                       </div>
                       <div className="col-span-2">
-                        <div className="text-[9px] text-gray-500 uppercase mb-1">Drawdown</div>
-                        <div className={`font-mono text-sm font-bold ${pod.drawdown < -0.05 ? 'text-red-500' : 'text-gray-500'}`}>
+                        <div className="text-[9px] md:text-[10px] text-gray-500 uppercase mb-1">Drawdown</div>
+                        <div className={`font-mono text-sm md:text-base font-bold ${pod.drawdown < -0.05 ? 'text-red-500' : 'text-gray-500'}`}>
                           <AnimatedNumber 
                             value={pod.drawdown} 
                             formatter={fmtPct}
@@ -185,6 +231,19 @@ const PodsTable = ({ pods, dateKey, localLeverage, onWeightChange }) => {
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Fire Button */}
+                  {pod.id !== "0" && onFirePod && (
+                    <button
+                      onClick={() => {
+                        onFirePod(pod.id);
+                        setSelectedPod(null);
+                      }}
+                      className="w-full bg-red-900/20 text-red-500 border border-red-800 py-2 text-xs md:text-sm font-bold hover:bg-red-900/40 transition-colors"
+                    >
+                      FIRE POD
+                    </button>
+                  )}
                 </>
               );
             })()}

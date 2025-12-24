@@ -62,7 +62,8 @@ export class ContentLoader {
         specialisms: data.specialisms || {},
         names_first: data.names_first || [],
         names_last: data.names_last || [],
-        bios: data.bios || []
+        bios: data.bios || [],
+        _candidates: data._candidates || [] // Preserve full candidate data including asset_class
       };
     } catch (error) {
       console.warn('Failed to load recruitment data from API, using defaults', error);

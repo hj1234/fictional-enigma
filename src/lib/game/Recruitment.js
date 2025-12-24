@@ -9,6 +9,11 @@ function inferAssetClassFromSpecialism(specialism) {
     'Equity TMT': ASSET_CLASSES.EQUITIES,
     'Deep Value': ASSET_CLASSES.EQUITIES,
     'Fixed Income RV': ASSET_CLASSES.FIXED_INCOME,
+    'Credit': ASSET_CLASSES.CREDIT,
+    'Credit Trading': ASSET_CLASSES.CREDIT,
+    'Distressed Credit': ASSET_CLASSES.CREDIT,
+    'High Yield Credit': ASSET_CLASSES.CREDIT,
+    'Credit Arbitrage': ASSET_CLASSES.CREDIT,
     'Global Macro': ASSET_CLASSES.FX,
     'Stat Arb': ASSET_CLASSES.GENERALIST,
     'Generalist': ASSET_CLASSES.GENERALIST
@@ -104,12 +109,20 @@ export function generateRecruit(recruitmentData = null) {
       else if (drawdown_pct < 8) valuation *= 1.2;
       
       // Demands
+      // Randomize salary between 100k and 250k in 5k increments
+      const min_salary = 100_000;
+      const max_salary = 250_000;
+      const increment = 5_000;
+      const num_increments = (max_salary - min_salary) / increment;
+      const random_increment = Math.floor(Math.random() * (num_increments + 1));
+      const salary = min_salary + (random_increment * increment);
+      
+      // Calculate signing bonus using valuation system (can be much higher than salary)
       const ego_factor = normalRandom(1.1, 0.2);
       const total_ask = Math.max(250_000, valuation * ego_factor);
       
       const bonus_ratio = Math.random() * 0.4 + 0.4; // 0.4-0.8
       const signing_bonus = Math.round(Math.floor(total_ask * bonus_ratio) / 10000) * 10000;
-      const salary = Math.round(Math.floor(total_ask * (1 - bonus_ratio)) / 10000) * 10000;
       
       let pnl_cut = 10;
       if (annual_alpha > 0.05) pnl_cut += 5;
@@ -119,7 +132,7 @@ export function generateRecruit(recruitmentData = null) {
         id: candidate.id || crypto.randomUUID(),
         name: `${candidate.first_name} ${candidate.last_name}`,
         specialism: candidate.specialism,
-        asset_class: candidate.asset_class || inferAssetClassFromSpecialism(candidate.specialism),
+        asset_class: candidate.asset_class || ASSET_CLASSES.GENERALIST,
         bio: candidate.bio,
         stats: {
           beta: Math.round(beta * 100) / 100,
@@ -173,12 +186,20 @@ export function generateRecruit(recruitmentData = null) {
   else if (drawdown_pct < 8) valuation *= 1.2;
   
   // Demands
+  // Randomize salary between 100k and 250k in 5k increments
+  const min_salary = 100_000;
+  const max_salary = 250_000;
+  const increment = 5_000;
+  const num_increments = (max_salary - min_salary) / increment;
+  const random_increment = Math.floor(Math.random() * (num_increments + 1));
+  const salary = min_salary + (random_increment * increment);
+  
+  // Calculate signing bonus using valuation system (can be much higher than salary)
   const ego_factor = normalRandom(1.1, 0.2);
   const total_ask = Math.max(250_000, valuation * ego_factor);
   
   const bonus_ratio = Math.random() * 0.4 + 0.4; // 0.4-0.8
   const signing_bonus = Math.round(Math.floor(total_ask * bonus_ratio) / 10000) * 10000;
-  const salary = Math.round(Math.floor(total_ask * (1 - bonus_ratio)) / 10000) * 10000;
   
   let pnl_cut = 10;
   if (annual_alpha > 0.05) pnl_cut += 5;

@@ -46,22 +46,41 @@ const TutorialOverlay = ({ steps, onComplete, onSkip }) => {
   const windowHeight = typeof window !== 'undefined' ? window.innerHeight : 0;
 
   // Calculate tooltip position
+  // Max height is 50vh (50% of viewport), so we need at least that much space
+  const tooltipMaxHeight = windowHeight * 0.5; // 50vh in pixels
+  const tooltipPadding = 20; // Padding from edges
+  
   let tooltipTop = '50%';
   let tooltipLeft = '50%';
   let tooltipTransform = 'translate(-50%, -50%)';
   
   if (elementRect) {
-    // Position tooltip below element if there's space, otherwise above
-    if (elementRect.bottom + 200 < windowHeight) {
+    // Try to position tooltip below element
+    if (elementRect.bottom + tooltipMaxHeight + tooltipPadding < windowHeight) {
       tooltipTop = `${elementRect.bottom + 20}px`;
-      tooltipLeft = `${Math.max(20, Math.min(elementRect.left, windowWidth - 400))}px`;
+      tooltipLeft = `${Math.max(tooltipPadding, Math.min(elementRect.left, windowWidth - 400 - tooltipPadding))}px`;
       tooltipTransform = 'none';
-    } else if (elementRect.top - 200 > 0) {
-      tooltipTop = `${elementRect.top - 200}px`;
-      tooltipLeft = `${Math.max(20, Math.min(elementRect.left, windowWidth - 400))}px`;
+    } 
+    // Try to position tooltip above element
+    else if (elementRect.top - tooltipMaxHeight - tooltipPadding > 0) {
+      tooltipTop = `${elementRect.top - tooltipMaxHeight - 20}px`;
+      tooltipLeft = `${Math.max(tooltipPadding, Math.min(elementRect.left, windowWidth - 400 - tooltipPadding))}px`;
       tooltipTransform = 'none';
-    } else {
-      // Center if no good position
+    } 
+    // Try to position tooltip to the right
+    else if (elementRect.right + 420 < windowWidth) {
+      tooltipTop = `${Math.max(tooltipPadding, Math.min(elementRect.top, windowHeight - tooltipMaxHeight - tooltipPadding))}px`;
+      tooltipLeft = `${elementRect.right + 20}px`;
+      tooltipTransform = 'none';
+    }
+    // Try to position tooltip to the left
+    else if (elementRect.left - 420 > 0) {
+      tooltipTop = `${Math.max(tooltipPadding, Math.min(elementRect.top, windowHeight - tooltipMaxHeight - tooltipPadding))}px`;
+      tooltipLeft = `${elementRect.left - 420}px`;
+      tooltipTransform = 'none';
+    }
+    // Center if no good position, but ensure it fits
+    else {
       tooltipTop = '50%';
       tooltipLeft = '50%';
       tooltipTransform = 'translate(-50%, -50%)';
@@ -134,17 +153,18 @@ const TutorialOverlay = ({ steps, onComplete, onSkip }) => {
       {/* Tooltip */}
       {step.tooltip && (
         <div 
-          className="absolute pointer-events-auto bg-gray-900 border-2 border-amber-500 p-4 rounded-lg max-w-sm shadow-2xl"
+          className="absolute pointer-events-auto bg-gray-900 border-2 border-amber-500 p-4 rounded-lg max-w-sm shadow-2xl max-h-[50vh] flex flex-col"
           style={{
             top: tooltipTop,
             left: tooltipLeft,
-            transform: tooltipTransform
+            transform: tooltipTransform,
+            maxHeight: `${Math.min(windowHeight * 0.5, windowHeight - 40)}px`
           }}
         >
-          <div className="text-amber-500 font-bold text-sm mb-2">
+          <div className="text-amber-500 font-bold text-sm mb-2 shrink-0">
             {step.title || `Step ${currentStep + 1} of ${steps.length}`}
           </div>
-          <div className="text-white text-xs mb-4 whitespace-pre-line leading-relaxed">
+          <div className="text-white text-xs mb-4 whitespace-pre-line leading-relaxed overflow-y-auto flex-1 pr-1">
             {step.content}
           </div>
           <div className="flex gap-2 justify-between items-center">

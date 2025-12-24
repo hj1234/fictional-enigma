@@ -436,14 +436,11 @@ export default function GameDashboard({ firmName }) {
     // The viewed counts will be updated when user actually views items via callbacks
   }, [gameState]);
   
-  // Check if user has seen tutorial on first load
+  // Show tutorial at the start of every game
   useEffect(() => {
     if (gameState) {
-      const hasSeenTutorial = localStorage.getItem('pod_shop_tutorial_completed');
-      if (!hasSeenTutorial) {
-        // Small delay to let UI render
-        setTimeout(() => setShowTutorial(true), 500);
-      }
+      // Small delay to let UI render
+      setTimeout(() => setShowTutorial(true), 500);
     }
   }, [gameState]);
   
@@ -538,6 +535,13 @@ export default function GameDashboard({ firmName }) {
       gameStateRef.current.firePod(id);
       setGameState(gameStateRef.current.getState());
       setSelectedEmail(null);
+    }
+  };
+  
+  const handleFirePodById = (podId) => {
+    if (gameStateRef.current) {
+      gameStateRef.current.firePodById(podId);
+      setGameState(gameStateRef.current.getState());
     }
   };
   
@@ -779,6 +783,8 @@ export default function GameDashboard({ firmName }) {
             dateKey={dateKey}
             localLeverage={localLeverage}
             onWeightChange={handleWeight}
+            poachedPods={gameState.poached_pods || []}
+            onFirePod={handleFirePodById}
           />
         </div>
         

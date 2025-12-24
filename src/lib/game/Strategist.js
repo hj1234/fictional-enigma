@@ -104,11 +104,26 @@ export class Strategist {
       [ASSET_CLASSES.EQUITIES]: "Equities",
       [ASSET_CLASSES.FIXED_INCOME]: "Fixed Income",
       [ASSET_CLASSES.COMMODITIES]: "Commodities",
-      [ASSET_CLASSES.VOLATILIY]: "Volatility",
+      [ASSET_CLASSES.VOLATILITY]: "Volatility",
+      [ASSET_CLASSES.CREDIT]: "Credit",
       [ASSET_CLASSES.FX]: "FX/Currency",
       [ASSET_CLASSES.GENERALIST]: "Generalist"
     };
     
+    // Select a random email format template
+    const formatTemplates = [
+      this._generateFormalFormat.bind(this),
+      this._generateCasualFormat.bind(this),
+      this._generateSkiingFormat.bind(this),
+      this._generateCoffeeFormat.bind(this),
+      this._generateBriefFormat.bind(this)
+    ];
+    
+    const selectedFormat = formatTemplates[Math.floor(Math.random() * formatTemplates.length)];
+    return selectedFormat(regime, recommendations, currentDate, regimeDescriptions, assetClassLabels);
+  }
+  
+  _generateFormalFormat(regime, recommendations, currentDate, regimeDescriptions, assetClassLabels) {
     let body = `MARKET REGIME ANALYSIS\n`;
     body += `Date: ${currentDate.toISOString().split('T')[0]}\n\n`;
     body += `${regimeDescriptions[regime]}\n\n`;
@@ -131,6 +146,101 @@ export class Strategist {
     
     body += `RECOMMENDATION: Adjust your pod allocations accordingly. Markets are dynamic - this analysis is based on current conditions and may change.\n\n`;
     body += `Best,\n${this.name}\n${this.title}`;
+    
+    return body;
+  }
+  
+  _generateCasualFormat(regime, recommendations, currentDate, regimeDescriptions, assetClassLabels) {
+    let body = `Hey,\n\n`;
+    body += `Quick update on the market regime. ${regimeDescriptions[regime]}\n\n`;
+    
+    if (recommendations.favored.length > 0) {
+      body += `What's working:\n`;
+      recommendations.favored.forEach(ac => {
+        body += `- ${assetClassLabels[ac]}\n`;
+      });
+      body += `\n`;
+    }
+    
+    if (recommendations.disfavored.length > 0) {
+      body += `What's not:\n`;
+      recommendations.disfavored.forEach(ac => {
+        body += `- ${assetClassLabels[ac]}\n`;
+      });
+      body += `\n`;
+    }
+    
+    body += `Food for thought as you position the book.\n\n`;
+    body += `${this.name}`;
+    
+    return body;
+  }
+  
+  _generateSkiingFormat(regime, recommendations, currentDate, regimeDescriptions, assetClassLabels) {
+    let body = `While cross country skiing this morning, I had a thought about the current market regime.\n\n`;
+    body += `${regimeDescriptions[regime]}\n\n`;
+    
+    if (recommendations.favored.length > 0) {
+      body += `The conditions favor:\n`;
+      recommendations.favored.forEach(ac => {
+        body += `• ${assetClassLabels[ac]}\n`;
+      });
+      body += `\n`;
+    }
+    
+    if (recommendations.disfavored.length > 0) {
+      body += `Meanwhile, I'd be cautious on:\n`;
+      recommendations.disfavored.forEach(ac => {
+        body += `• ${assetClassLabels[ac]}\n`;
+      });
+      body += `\n`;
+    }
+    
+    body += `The fresh air helps with perspective. Consider this when allocating capital.\n\n`;
+    body += `${this.name}\n${this.title}`;
+    
+    return body;
+  }
+  
+  _generateCoffeeFormat(regime, recommendations, currentDate, regimeDescriptions, assetClassLabels) {
+    let body = `Morning,\n\n`;
+    body += `Just finished my third espresso and the charts are telling a story. ${regimeDescriptions[regime]}\n\n`;
+    
+    if (recommendations.favored.length > 0) {
+      body += `Where I'm seeing opportunity:\n`;
+      recommendations.favored.forEach(ac => {
+        body += `→ ${assetClassLabels[ac]}\n`;
+      });
+      body += `\n`;
+    }
+    
+    if (recommendations.disfavored.length > 0) {
+      body += `Where I'm seeing risk:\n`;
+      recommendations.disfavored.forEach(ac => {
+        body += `→ ${assetClassLabels[ac]}\n`;
+      });
+      body += `\n`;
+    }
+    
+    body += `Caffeine-fueled analysis, but the data doesn't lie.\n\n`;
+    body += `${this.name}`;
+    
+    return body;
+  }
+  
+  _generateBriefFormat(regime, recommendations, currentDate, regimeDescriptions, assetClassLabels) {
+    let body = `REGIME UPDATE\n\n`;
+    body += `${regimeDescriptions[regime]}\n\n`;
+    
+    if (recommendations.favored.length > 0) {
+      body += `↑ ${recommendations.favored.map(ac => assetClassLabels[ac]).join(', ')}\n`;
+    }
+    
+    if (recommendations.disfavored.length > 0) {
+      body += `↓ ${recommendations.disfavored.map(ac => assetClassLabels[ac]).join(', ')}\n`;
+    }
+    
+    body += `\n--\n${this.name}`;
     
     return body;
   }

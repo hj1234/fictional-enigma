@@ -4,7 +4,7 @@
 import { ASSET_CLASSES } from './MarketRegime.js';
 
 export class Pod {
-  constructor(id, name, specialism, alpha, beta, salary, pnl_cut, asset_class = null) {
+  constructor(id, name, specialism, alpha, beta, salary, pnl_cut, asset_class = null, bio = null) {
     this.id = id;
     this.name = name;
     this.specialism = specialism;
@@ -12,7 +12,8 @@ export class Pod {
     this.beta = beta;
     this.salary = salary;
     this.pnl_cut = pnl_cut;
-    this.asset_class = asset_class || this.inferAssetClassFromSpecialism(specialism);
+    this.asset_class = asset_class || ASSET_CLASSES.GENERALIST;
+    this.bio = bio;
     
     // Economic State
     this.cumulative_pnl = 0.0;
@@ -23,6 +24,7 @@ export class Pod {
     // Risk Management
     this.is_active = true;
     this.is_fired = false;
+    this.is_poached = false;
     
     // Drawdown Tracking
     this.perf_index = 100.0;
@@ -37,20 +39,6 @@ export class Pod {
     this.momentum_factor = 0.0;
     this.momentum_strength = 0.15;
     this.mean_reversion_rate = 0.1;
-  }
-  
-  inferAssetClassFromSpecialism(specialism) {
-    // Map specialisms to asset classes
-    const mapping = {
-      'Crypto': ASSET_CLASSES.CRYPTO,
-      'Equity TMT': ASSET_CLASSES.EQUITIES,
-      'Deep Value': ASSET_CLASSES.EQUITIES,
-      'Fixed Income RV': ASSET_CLASSES.FIXED_INCOME,
-      'Global Macro': ASSET_CLASSES.FX,
-      'Stat Arb': ASSET_CLASSES.GENERALIST,
-      'Generalist': ASSET_CLASSES.GENERALIST
-    };
-    return mapping[specialism] || ASSET_CLASSES.GENERALIST;
   }
   
   tick(allocated_capital, market_return, regime_modifier = 1.0) {
@@ -150,7 +138,8 @@ export class Pod {
       drawdown: this.current_drawdown,
       status: this.is_active ? "Active" : "Stopped",
       weight: this.weight,
-      alloc_pct: total_weight > 0 ? (this.weight / total_weight) : 0.0
+      alloc_pct: total_weight > 0 ? (this.weight / total_weight) : 0.0,
+      bio: this.bio
     };
   }
 }

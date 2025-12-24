@@ -27,6 +27,10 @@ export class GameState {
     // Store content data
     this.contentData = contentData;
     
+    // Select random prime broker name
+    const primeBrokerNames = ["Goldmine Hacks", "JP Margin", "Shock Gen"];
+    this.prime_broker_name = primeBrokerNames[Math.floor(Math.random() * primeBrokerNames.length)];
+    
     // Initialize MessageManager (unified message system)
     this.message_manager = messageManager || new MessageManager(this.current_date);
     
@@ -61,11 +65,28 @@ export class GameState {
     this.trading_days_elapsed = 0;
     this.max_trading_days = 1260; // 5 years * 252 trading days/year
     
+    // Pod poaching tracking
+    this.poached_pods = []; // Track pods that were poached this step (for animation)
+    this.competitor_names = [
+      "Three Point One Four",
+      "Fortress",
+      "The Fortnight Group",
+      "Cubicle",
+      "Beta Blocker",
+      "The Shire"
+    ];
+    
     // NewsWire is now just a container for news items (no logic)
     this.news_wire = { news_items: [] };
     
-    // Initialize House Pod
-    const house_pod = new Pod("0", "House Account", "Generalist", 0.0001, 0.4, 150000, 0);
+    // Initialize House Pod with randomized salary (100k-250k in 5k increments)
+    const min_salary = 100_000;
+    const max_salary = 250_000;
+    const increment = 5_000;
+    const num_increments = (max_salary - min_salary) / increment;
+    const random_increment = Math.floor(Math.random() * (num_increments + 1));
+    const house_salary = min_salary + (random_increment * increment);
+    const house_pod = new Pod("0", "House Account", "Generalist", 0.0001, 0.4, house_salary, 0);
     house_pod.high_water_mark = 0;
     house_pod.pnl_at_month_start = 0.0;
     this.pods = [house_pod];
@@ -140,7 +161,8 @@ export class GameState {
         recruit.stats.beta,
         recruit.demands.salary,
         recruit.demands.pnl_cut,
-        recruit.asset_class
+        recruit.asset_class,
+        recruit.bio
       );
       new_pod.weight = 10.0;
       new_pod.pnl_at_month_start = 0.0;
@@ -179,8 +201,23 @@ export class GameState {
         return;
       }
       
+      this.firePodById(podId);
+      this.email_manager.removeEmail(emailId);
+    }
+  }
+  
+  firePodById(podId) {
+      if (!podId || podId === "0") {
+        this.logs.unshift({
+          date: this.current_date.toISOString().split('T')[0],
+          text: "Cannot fire House Account.",
+          type: "warning"
+        });
+        return;
+      }
+      
       const pod = this.pods.find(p => p.id === podId);
-      if (!pod || pod.is_fired) return;
+    if (!pod || pod.is_fired || pod.is_poached) return;
       
       const fired_weight = pod.weight;
       
@@ -189,7 +226,7 @@ export class GameState {
       pod.weight = 0.0;
       
       // Redistribute weight
-      const active_pods = this.pods.filter(p => p.is_active && p.id !== "0");
+    const active_pods = this.pods.filter(p => p.is_active && !p.is_poached && p.id !== "0");
       if (active_pods.length > 0 && fired_weight > 0) {
         const total_active_weight = active_pods.reduce((sum, p) => sum + p.weight, 0);
         if (total_active_weight > 0) {
@@ -211,13 +248,11 @@ export class GameState {
         pod_name: pod.name
       });
       
-      this.email_manager.removeEmail(emailId);
       this.logs.unshift({
         date: this.current_date.toISOString().split('T')[0],
         text: `FIRED: ${pod.name}`,
         type: "danger"
       });
-    }
   }
   
   processMonthEnd() {
@@ -464,7 +499,8 @@ export class GameState {
         };
         
         email.subject = this.message_manager.interpolate(email.subject, recruitData);
-        email.body = this.message_manager.interpolate(email.body, recruitData);
+        // Generate varied email body format
+        email.body = this._generateRecruitmentEmailBody(recruitData);
         email.data = recruit; // Store full recruit data for hiring
       }
       this.email_manager.sendEmail(randomMessages.email);
@@ -507,7 +543,8 @@ export class GameState {
       if (warning_level === "margin_call" || warning_level === "margin_call_active") {
         // Margin call - trigger game event
         const marginCallResults = this.message_manager.triggerGameEvent('margin_call', {
-          leverage: this.fund.effective_leverage
+          leverage: this.fund.effective_leverage,
+          prime_broker_name: this.prime_broker_name
         });
         
         // Send margin call email
@@ -552,7 +589,8 @@ export class GameState {
       } else {
         // Trigger leverage threshold event
         const leverageResults = this.message_manager.triggerGameEvent('leverage_threshold', {
-          leverage: this.fund.effective_leverage
+          leverage: this.fund.effective_leverage,
+          prime_broker_name: this.prime_broker_name
         });
         
         for (const email of leverageResults.email) {
@@ -561,10 +599,11 @@ export class GameState {
       }
     }
     
-    // Check for first leverage use
+    // Check for first leverage use (when leverage goes above 1.0x)
     if (this.fund.checkFirstLeverageUse()) {
       const firstLeverageResults = this.message_manager.triggerGameEvent('first_leverage_use', {
-        leverage: this.fund.effective_leverage
+        leverage: this.fund.effective_leverage,
+        prime_broker_name: this.prime_broker_name
       });
       
       for (const email of firstLeverageResults.email) {
@@ -573,15 +612,29 @@ export class GameState {
       
       this.logs.unshift({
         date: this.current_date.toISOString().split('T')[0],
-        text: "PRIME BROKER: Leverage facility activated.",
+        text: `${this.prime_broker_name.toUpperCase()}: Leverage facility activated.`,
         type: "info"
       });
+    }
+    
+    // Check for pod poaching (very low probability - should happen 3-4 times over 5 years)
+    // Probability: ~0.0006 per pod per day (gives ~3-4 poaches over 5 years with 5-6 pods)
+    for (const pod of this.pods) {
+      if (pod.id === "0") continue; // Skip house pod
+      if (pod.is_fired || !pod.is_active) continue;
+      if (pod.is_poached) continue; // Already poached
+      
+      // Check if pod gets poached (very low probability)
+      if (Math.random() < 0.0006) {
+        this.handlePodPoaching(pod);
+      }
     }
     
     // Check for pod drawdown warnings via MessageManager
     for (const pod of this.pods) {
       if (pod.id === "0") continue;
       if (pod.is_fired || !pod.is_active) continue;
+      if (pod.is_poached) continue; // Skip poached pods
       
       // Reset flag when drawdown recovers above -5%
       if (pod.current_drawdown > -0.05 && pod.drawdown_warning_sent) {
@@ -608,27 +661,27 @@ export class GameState {
         })();
         
         if (shouldSendEmail && !pod.drawdown_warning_sent) {
-          // Trigger drawdown event
-          const drawdownResults = this.message_manager.triggerGameEvent('pod_drawdown', {
-            pod_id: pod.id,
-            pod_name: pod.name,
-            drawdown: pod.current_drawdown,
-            drawdown_display: `${Math.abs(pod.current_drawdown * 100).toFixed(1)}%`,
-            salary: pod.salary
-          });
-          
-          for (const email of drawdownResults.email) {
-            this.email_manager.sendEmail(email);
-          }
-          
-          pod.drawdown_warning_sent = true;
+        // Trigger drawdown event
+        const drawdownResults = this.message_manager.triggerGameEvent('pod_drawdown', {
+          pod_id: pod.id,
+          pod_name: pod.name,
+          drawdown: pod.current_drawdown,
+          drawdown_display: `${Math.abs(pod.current_drawdown * 100).toFixed(1)}%`,
+          salary: pod.salary
+        });
+        
+        for (const email of drawdownResults.email) {
+          this.email_manager.sendEmail(email);
+        }
+        
+        pod.drawdown_warning_sent = true;
           pod.last_drawdown_email_date = new Date(this.current_date); // Store date as Date object
-          
-          this.logs.unshift({
-            date: this.current_date.toISOString().split('T')[0],
-            text: `RISK ALERT: ${pod.name} drawdown at ${(pod.current_drawdown * 100).toFixed(1)}%`,
-            type: "alert"
-          });
+        
+        this.logs.unshift({
+          date: this.current_date.toISOString().split('T')[0],
+          text: `RISK ALERT: ${pod.name} drawdown at ${(pod.current_drawdown * 100).toFixed(1)}%`,
+          type: "alert"
+        });
         }
       }
     }
@@ -667,11 +720,63 @@ export class GameState {
     this.previous_nav = currentNav;
     this.previous_firm_cash = currentFirmCash;
     
-    return this.getState();
+    // Get poached pods for this step (for animation), then clear
+    const poachedThisStep = [...this.poached_pods];
+    this.poached_pods = []; // Clear for next step
+    
+    const state = this.getState();
+    state.poached_pods = poachedThisStep; // Add to state for animation
+    
+    return state;
+  }
+  
+  handlePodPoaching(pod) {
+    // Mark pod as poached
+    pod.is_poached = true;
+    pod.is_active = false;
+    
+    // Select random competitor
+    const competitor = this.competitor_names[Math.floor(Math.random() * this.competitor_names.length)];
+    
+    // Track for animation
+    this.poached_pods.push(pod.id);
+    
+    // Create poaching email
+    const poachingEmail = {
+      id: `poaching_${pod.id}_${Date.now()}`,
+      sender: "HR Department",
+      subject: `Pod Poached: ${pod.name}`,
+      body: `URGENT: ${pod.name} has been poached by ${competitor}.\n\n` +
+            `Effective immediately, ${pod.name} is no longer managing capital for your fund. ` +
+            `Their allocation has been redistributed to remaining active pods.\n\n` +
+            `This is a competitive industry. Consider offering retention bonuses to key talent.`,
+      type: "alert",
+      date: this.current_date.toISOString().split('T')[0],
+      read: false
+    };
+    
+    this.email_manager.sendEmail(poachingEmail);
+    
+    // Redistribute pod's weight to other active pods
+    const activePods = this.pods.filter(p => p.is_active && !p.is_poached && p.id !== "0");
+    if (activePods.length > 0) {
+      const weightPerPod = pod.weight / activePods.length;
+      activePods.forEach(p => {
+        p.weight += weightPerPod;
+      });
+    }
+    pod.weight = 0;
+    
+    // Log the poaching
+    this.logs.unshift({
+      date: this.current_date.toISOString().split('T')[0],
+      text: `POACHED: ${pod.name} left for ${competitor}`,
+      type: "alert"
+    });
   }
   
   getState() {
-    const active_pods = this.pods.filter(p => p.is_active);
+    const active_pods = this.pods.filter(p => p.is_active && !p.is_poached);
     const total_weight = active_pods.reduce((sum, p) => sum + p.weight, 0) || 1;
     
     // Format date as "DD MMM YYYY" (e.g., "01 Jan 2024")
@@ -705,12 +810,12 @@ export class GameState {
       game_over: this.game_over,
       game_over_reason: this.game_over_reason,
       firm_name: this.firm_name,
-        pods: active_pods.map(p => p.getSerialized(total_weight)),
+      pods: active_pods.map(p => p.getSerialized(total_weight)),
         market_history: this.fund.getMarketPerformanceHistory(),
         earned_awards: this.awards.getEarnedAwards(),
         trading_days_elapsed: this.trading_days_elapsed,
         max_trading_days: this.max_trading_days
-      };
+    };
   }
   
   _calculatePrestigeMonths(pod) {
@@ -738,6 +843,57 @@ export class GameState {
     }
     
     return Math.max(3, Math.min(18, months));
+  }
+  
+  /**
+   * Generate varied recruitment email body formats
+   */
+  _generateRecruitmentEmailBody(recruitData) {
+    const formats = [
+      this._generateRecruitmentFormatStandard.bind(this),
+      this._generateRecruitmentFormatCasual.bind(this),
+      this._generateRecruitmentFormatWoundedLion.bind(this),
+      this._generateRecruitmentFormatBulletPoints.bind(this),
+      this._generateRecruitmentFormatStory.bind(this),
+      this._generateRecruitmentFormatBrief.bind(this),
+      this._generateRecruitmentFormatCoffee.bind(this),
+      this._generateRecruitmentFormatQuick.bind(this)
+    ];
+    
+    const selectedFormat = formats[Math.floor(Math.random() * formats.length)];
+    return selectedFormat(recruitData);
+  }
+  
+  _generateRecruitmentFormatStandard(recruitData) {
+    return `Take a look at this profile.\n\nHeadhunter`;
+  }
+  
+  _generateRecruitmentFormatCasual(recruitData) {
+    return `Got someone interesting for you.\n\nHeadhunter`;
+  }
+  
+  _generateRecruitmentFormatWoundedLion(recruitData) {
+    return `I've got a wounded lion for you.\n\nHeadhunter`;
+  }
+  
+  _generateRecruitmentFormatBulletPoints(recruitData) {
+    return `Candidate alert.\n\nHeadhunter`;
+  }
+  
+  _generateRecruitmentFormatStory(recruitData) {
+    return `Coffee next week?\n\nHeadhunter`;
+  }
+  
+  _generateRecruitmentFormatBrief(recruitData) {
+    return `Worth a look.\n\nHeadhunter`;
+  }
+  
+  _generateRecruitmentFormatCoffee(recruitData) {
+    return `Quick one - thought you'd like this.\n\nHeadhunter`;
+  }
+  
+  _generateRecruitmentFormatQuick(recruitData) {
+    return `Check this out.\n\nHeadhunter`;
   }
 }
 

@@ -134,7 +134,7 @@ export default function Leaderboard({ isOpen, onClose }) {
           {entries.length === 0 && !loading && (
             <div className="text-center py-12 text-gray-600">
               <p className="text-lg mb-2">No entries yet</p>
-              <p className="text-sm">Be the first to complete a game!</p>
+              <p className="text-sm">Be the first to complete a game with positive PnL!</p>
             </div>
           )}
         </div>

@@ -189,7 +189,7 @@ export class MessageManager {
     
     return {
       id: crypto.randomUUID(),
-      sender: content.sender || "System",
+      sender: this._interpolate(content.sender || "System", eventData),
       subject: this._interpolate(content.subject || "", eventData),
       body: this._interpolate(content.body || "", eventData),
       date: this.current_date.toISOString().split('T')[0],
