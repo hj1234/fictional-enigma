@@ -121,6 +121,26 @@ export const AWARDS = {
       // This will be awarded manually when time limit is reached
     },
     image: '/trophies/survived_three_years.svg'
+  },
+  GRIM_REAPER: {
+    id: 'grim_reaper',
+    name: 'Grim Reaper',
+    description: 'Fired your first portfolio manager',
+    trigger: {
+      type: 'first_pod_fired',
+      // This will be awarded manually when first pod is fired
+    },
+    image: '/trophies/grim_reaper.png'
+  },
+  GRIM_REAPER_PLATINUM: {
+    id: 'grim_reaper_platinum',
+    name: 'Grim Reaper Platinum',
+    description: 'Fired three portfolio managers',
+    trigger: {
+      type: 'three_pods_fired',
+      // This will be awarded manually when three pods are fired
+    },
+    image: '/trophies/grim_reaper_platinum.png'
   }
 };
 
@@ -270,6 +290,14 @@ export class Awards {
       // Margin call - different tone (ironic/satirical)
       subject = `🏆 "Achievement" Unlocked: ${award.name}`;
       body = `Well... this happened.\n\n${award.description}\n\nYou've earned ${award.name} - a reminder that leverage cuts both ways. This "achievement" has been added to your trophy cabinet.\n\nMaybe next time, dial it back a bit?\n\nBest regards,\nIndustry Recognition Committee`;
+    } else if (trigger.type === 'first_pod_fired') {
+      // Grim Reaper - dark humor tone
+      subject = `🏆 Achievement Unlocked: ${award.name}`;
+      body = `Well, well, well...\n\n${award.description}\n\nYou've earned ${award.name} - your first termination. Sometimes tough decisions need to be made. This "achievement" has been added to your trophy cabinet.\n\nWelcome to the club.\n\nBest regards,\nIndustry Recognition Committee`;
+    } else if (trigger.type === 'three_pods_fired') {
+      // Grim Reaper Platinum - darker humor tone
+      subject = `🏆 Achievement Unlocked: ${award.name}`;
+      body = `Impressive... or concerning?\n\n${award.description}\n\nYou've earned ${award.name} - three terminations. You're building quite a reputation. This "achievement" has been added to your trophy cabinet.\n\nAt this rate, you might need a dedicated HR department.\n\nBest regards,\nIndustry Recognition Committee`;
     } else {
       // Default message
       subject = `🏆 Award: ${award.name}`;

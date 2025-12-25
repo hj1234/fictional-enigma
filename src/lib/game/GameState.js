@@ -76,6 +76,9 @@ export class GameState {
       "The Shire"
     ];
     
+    // Track pod firings for awards
+    this.pods_fired_count = 0;
+    
     // NewsWire is now just a container for news items (no logic)
     this.news_wire = { news_items: [] };
     
@@ -240,6 +243,41 @@ export class GameState {
             active_pod.weight += weight_per_pod;
           }
         }
+      }
+      
+      // Increment fired count and check for awards
+      this.pods_fired_count++;
+      
+      // Check for Grim Reaper award (first pod fired)
+      if (this.pods_fired_count === 1 && !this.awards.hasEarned('grim_reaper')) {
+        this.awards.earnedAwards.push('grim_reaper');
+        this.awards.saveEarnedAwards();
+        
+        // Send award email
+        const awardEmail = this.awards.generateAwardEmail(AWARDS.GRIM_REAPER, this.current_date);
+        this.email_manager.sendEmail(awardEmail);
+        
+        this.logs.unshift({
+          date: this.current_date.toISOString().split('T')[0],
+          text: `🏆 AWARD EARNED: ${AWARDS.GRIM_REAPER.name}`,
+          type: "success"
+        });
+      }
+      
+      // Check for Grim Reaper Platinum award (three pods fired)
+      if (this.pods_fired_count === 3 && !this.awards.hasEarned('grim_reaper_platinum')) {
+        this.awards.earnedAwards.push('grim_reaper_platinum');
+        this.awards.saveEarnedAwards();
+        
+        // Send award email
+        const awardEmail = this.awards.generateAwardEmail(AWARDS.GRIM_REAPER_PLATINUM, this.current_date);
+        this.email_manager.sendEmail(awardEmail);
+        
+        this.logs.unshift({
+          date: this.current_date.toISOString().split('T')[0],
+          text: `🏆 AWARD EARNED: ${AWARDS.GRIM_REAPER_PLATINUM.name}`,
+          type: "success"
+        });
       }
       
       // Trigger pod_fired event
