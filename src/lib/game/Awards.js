@@ -6,10 +6,10 @@ export const AWARDS = {
   HEDGE_FUND_OF_MONTH: {
     id: 'hedge_fund_of_month',
     name: 'Hedge Fund of the Month',
-    description: 'Achieved $130M NAV',
+    description: 'Achieved $105M NAV',
     trigger: {
       type: 'nav_threshold',
-      threshold: 130_000_000,
+      threshold: 105_000_000,
       direction: 'above' // Trigger when passing above threshold
     },
     image: '/trophies/hedge_fund_of_month.png'
@@ -17,10 +17,10 @@ export const AWARDS = {
   APARTMENT: {
     id: 'apartment',
     name: 'Apartment',
-    description: 'Accumulated $50M in firm cash',
+    description: 'Accumulated $35M in firm cash',
     trigger: {
       type: 'firm_cash_threshold',
-      threshold: 50_000_000,
+      threshold: 35_000_000,
       direction: 'above'
     },
     image: '/trophies/apartment.png'
@@ -28,10 +28,10 @@ export const AWARDS = {
   SS_POSITIVE_CARRY: {
     id: 'ss_positive_carry',
     name: 'SS Positive Carry',
-    description: 'Accumulated $60M in firm cash',
+    description: 'Accumulated $40M in firm cash',
     trigger: {
       type: 'firm_cash_threshold',
-      threshold: 60_000_000,
+      threshold: 40_000_000,
       direction: 'above'
     },
     image: '/trophies/ss_positive_carry.png'
@@ -39,10 +39,10 @@ export const AWARDS = {
   NOHO_CLUB: {
     id: 'noho_club',
     name: 'NoHo Club',
-    description: 'Reached $150M NAV',
+    description: 'Reached $110M NAV',
     trigger: {
       type: 'nav_threshold',
-      threshold: 150_000_000,
+      threshold: 110_000_000,
       direction: 'above'
     },
     image: '/trophies/noho_club.png'
@@ -50,21 +50,21 @@ export const AWARDS = {
   GLOBAL_EXPRESS: {
     id: 'global_express',
     name: 'Global Express',
-    description: 'Accumulated $75M in firm cash',
+    description: 'Accumulated $55M in firm cash',
     trigger: {
       type: 'firm_cash_threshold',
-      threshold: 75_000_000,
+      threshold: 55_000_000,
       direction: 'above'
     },
     image: '/trophies/global_express.png'
   },
   NAV_500M: {
-    id: 'nav_500m',
-    name: 'Nav 500M',
-    description: 'Reached $500M NAV',
+    id: 'nav_150m',
+    name: 'Nav 150M',
+    description: 'Reached $150M NAV',
     trigger: {
       type: 'nav_threshold',
-      threshold: 500_000_000,
+      threshold: 150_000_000,
       direction: 'above'
     },
     image: '/trophies/nav_500m.png'
@@ -93,10 +93,10 @@ export const AWARDS = {
   SUNDERLAND_SEAGULLS: {
     id: 'sunderland_seagulls',
     name: 'Sunderland Seagulls',
-    description: 'Accumulated $90M in firm cash',
+    description: 'Accumulated $65M in firm cash',
     trigger: {
       type: 'firm_cash_threshold',
-      threshold: 90_000_000,
+      threshold: 65_000_000,
       direction: 'above'
     },
     image: '/trophies/sunderland_seagulls.png'
@@ -104,10 +104,10 @@ export const AWARDS = {
   PODCAST: {
     id: 'podcast',
     name: 'Podcast',
-    description: 'Reached $175M NAV',
+    description: 'Reached $120M NAV',
     trigger: {
       type: 'nav_threshold',
-      threshold: 175_000_000,
+      threshold: 120_000_000,
       direction: 'above'
     },
     image: '/trophies/podcast.png'
