@@ -120,7 +120,7 @@ export const AWARDS = {
       type: 'time_limit',
       // This will be awarded manually when time limit is reached
     },
-    image: '/trophies/survived_three_years.svg'
+    image: '/trophies/survived_three_years.png'
   },
   GRIM_REAPER: {
     id: 'grim_reaper',

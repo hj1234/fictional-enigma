@@ -64,6 +64,7 @@ export class GameState {
     this.start_date = new Date(START_DATE);
     this.trading_days_elapsed = 0;
     this.max_trading_days = 1260; // 5 years * 252 trading days/year
+    this.last_time_limit_email = 0; // Track last half-year milestone (in trading days)
     
     // Pod poaching tracking
     this.poached_pods = []; // Track pods that were poached this step (for animation)
@@ -348,6 +349,17 @@ export class GameState {
     
     // Increment trading days counter (only count weekdays)
     this.trading_days_elapsed++;
+    
+    // Check for half-year milestones (every 126 trading days) to send time limit emails
+    const half_year_days = 126; // 6 months * 21 trading days/month
+    if (this.trading_days_elapsed >= half_year_days && 
+        this.trading_days_elapsed % half_year_days === 0 &&
+        this.trading_days_elapsed !== this.last_time_limit_email &&
+        this.trading_days_elapsed < this.max_trading_days) {
+      this.last_time_limit_email = this.trading_days_elapsed;
+      const timeLimitEmail = this.createTimeLimitEmail();
+      this.email_manager.sendEmail(timeLimitEmail);
+    }
     
     // Check for 5-year time limit
     if (this.trading_days_elapsed >= this.max_trading_days) {
@@ -766,6 +778,62 @@ export class GameState {
     state.poached_pods = poachedThisStep; // Add to state for animation
     
     return state;
+  }
+  
+  createTimeLimitEmail() {
+    const daysRemaining = this.max_trading_days - this.trading_days_elapsed;
+    const yearsRemaining = (daysRemaining / 252).toFixed(1);
+    const halfYearsElapsed = Math.floor(this.trading_days_elapsed / 126);
+    const totalHalfYears = Math.floor(this.max_trading_days / 126);
+    
+    // Format money values
+    const fmtMoney = (n) => {
+      if (typeof n !== 'number') return "$0";
+      if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+      if (Math.abs(n) >= 1_000) return `$${(n / 1_000).toFixed(0)}k`;
+      return `$${n.toFixed(0)}`;
+    };
+    
+    const fmtPct = (n) => {
+      if (typeof n !== 'number') return "0.0%";
+      return (n * 100).toFixed(1) + "%";
+    };
+    
+    const nav = this.fund.investor_equity;
+    const firmCash = this.ledger.firm_cash;
+    const leverage = this.fund.effective_leverage;
+    const grossExposure = this.fund.gross_exposure;
+    const activePods = this.pods.filter(p => p.is_active && !p.is_poached).length;
+    
+    // Calculate total PnL across all pods
+    const totalPodPnL = this.pods
+      .filter(p => p.is_active && !p.is_poached)
+      .reduce((sum, p) => sum + (p.cumulative_pnl || 0), 0);
+    
+    const body = `PERIODIC UPDATE - ${halfYearsElapsed}/${totalHalfYears} HALF-YEARS COMPLETE\n\n` +
+                 `TIME REMAINING:\n` +
+                 `• ${daysRemaining} trading days remaining\n` +
+                 `• Approximately ${yearsRemaining} years left\n\n` +
+                 `CURRENT FUND STATISTICS:\n` +
+                 `• NAV: ${fmtMoney(nav)}\n` +
+                 `• Firm Cash: ${fmtMoney(firmCash)}\n` +
+                 `• Gross Exposure: ${fmtMoney(grossExposure)}\n` +
+                 `• Effective Leverage: ${leverage.toFixed(2)}x\n` +
+                 `• Active Pods: ${activePods}\n` +
+                 `• Total Pod PnL: ${fmtMoney(totalPodPnL)}\n\n` +
+                 `Keep building your fund. Time is ticking.\n\n` +
+                 `Best regards,\nFund Administrator`;
+    
+    return {
+      id: crypto.randomUUID(),
+      sender: "Fund Administrator",
+      subject: `Periodic Update: ${yearsRemaining} Years Remaining`,
+      body: body,
+      date: this.current_date.toISOString().split('T')[0],
+      type: "standard",
+      read: false,
+      requires_response: false
+    };
   }
   
   handlePodPoaching(pod) {
