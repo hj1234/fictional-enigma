@@ -58,7 +58,7 @@ export const AWARDS = {
     },
     image: '/trophies/global_express.png'
   },
-  NAV_500M: {
+  NAV_150M: {
     id: 'nav_150m',
     name: 'Nav 150M',
     description: 'Reached $150M NAV',
@@ -67,7 +67,7 @@ export const AWARDS = {
       threshold: 150_000_000,
       direction: 'above'
     },
-    image: '/trophies/nav_500m.png'
+    image: '/trophies/nav_150m.png'
   },
   BIOGRAPHY: {
     id: 'biography',
@@ -79,6 +79,17 @@ export const AWARDS = {
       direction: 'above'
     },
     image: '/trophies/biography.png'
+  },
+  NAV_500M: {
+    id: 'nav_500m',
+    name: 'Nav 500M',
+    description: 'Reached $500M NAV',
+    trigger: {
+      type: 'nav_threshold',
+      threshold: 500_000_000,
+      direction: 'above'
+    },
+    image: '/trophies/nav_500m.png'
   },
   LTCM_TROPHY: {
     id: 'ltcm_trophy',
